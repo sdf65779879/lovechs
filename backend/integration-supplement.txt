@@ -1,0 +1,20 @@
+﻿==== A. 个人资料 ====
+update profile: {"code":0,"message":"成功"}
+me after: nickname=宝贝 avatar=/uploads/202610/avatar-demo.png
+
+==== B. 修改密码 ====
+change password: {"code":0,"message":"成功"}
+login with new pwd: code=0
+wrong old password: {"code":1000,"message":"旧密码不正确"}
+login after restore: code=0
+
+==== C. 用户管理 ====
+create user: {"code":0,"message":"成功","data":{"id":3,"username":"guest2","nickname":"客串小二","role":"USER","status":1}}
+duplicate username: {"code":1000,"message":"账号「guest2」已存在"}
+guest login: code=0
+guest login while disabled: {"code":1002,"message":"账号已被禁用"}
+guest login after reset: code=0
+user page keyword=guest: total=1
+
+==== D. 清理残留订单（id=4，测试遗留 PENDING） ====
+reject leftover: {"code":0,"message":"成功","data":{"id":4,"orderNo":"202610100021281237","userId":2,"nickname":"宝贝","status":"REJECTED","statusLabel":"已拒绝","totalLove":8,"remark":"?","rejectReason":"测试残留单，自动清理","createTime":"2026-10-10T00:21:28","items":[{"dishId":1,"dishName":"番茄牛腩拌面","dishImage":"/images/placeholder/1.svg","loveValue":8,"quantity":1,"taste":"","remark":"","lineLove":8}]}}

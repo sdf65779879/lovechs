@@ -1,0 +1,19 @@
+# ============ 生产环境（Docker / Linux 服务器） ============
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:couple_ordering}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:couple}
+    password: ${MYSQL_PASSWORD:couple}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+
+couple:
+  upload:
+    dir: ${UPLOAD_DIR:/app/uploads}
+
+logging:
+  level:
+    com.couple.ordering: info

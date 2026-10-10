@@ -1,0 +1,71 @@
+﻿PASS | 0 健康检查 /v1/health | {"code":0,"message":"成功","data":"ok"}
+PASS | 1.1 admin 登录 | 大厨
+PASS | 1.2 love 登录 | 宝贝
+PASS | 1.3 错误密码返回 1001 | 1001
+PASS | 1.4 无 Token 返回 401 | 401
+PASS | 1.5 love 访问管理端返回 403 | 403
+PASS | 1.6 GET /me | 宝贝
+PASS | 2.1 分类列表 | 6 个分类
+PASS | 2.2 菜品分页 | total=15
+PASS | 2.3 推荐菜品 | 5 条
+PASS | 2.4 菜品详情 | 番茄牛腩拌面
+PASS | 2.5 中文搜索（番茄） | total=2
+PASS | 2.6 公开配置（需登录） | businessOpen=1
+PASS | 3.1 上传图片（love） | /uploads/202610/d9a7bb913ac944218256c6c6c64b21e7.png
+PASS | 3.2 上传图片经 nginx /uploads 可访问 | 200 image/png
+PASS | 4.1 加购（口味/备注）
+PASS | 4.2 购物车列表 | 1 条
+PASS | 4.3 条目字段（taste/remark/lineLove） | lineLove=16
+PASS | 4.4 修改条目
+PASS | 5.1 提交订单（PENDING） | 202610101805167887
+PASS | 5.2 相同幂等键返回同一订单 | id=5
+PASS | 5.3 下单后购物车清空 | 0 条
+PASS | 5.4 接单 ACCEPTED | 已接单
+PASS | 5.5 制作 COOKING | 制作中
+PASS | 5.6 完成 COMPLETED | 已完成
+PASS | 5.7 用户端详情见最新状态+明细 | 1 条明细
+PASS | 5.8 非法状态跳转返回 1003 | 1003
+PASS | 5.9 待接单可取消
+PASS | 5.10 拒绝未填理由返回 400（参数错误） | 400
+PASS | 5.11 拒绝并填理由 REJECTED | 食材不够
+PASS | 5.12 再下单加回购物车 | addedCount=1
+PASS | 5.13 吃饭日历 | 1 天有订单
+PASS | 5.14 我的订单分页（finished 含已完成单） | total=7
+PASS | 6.1 收藏
+PASS | 6.2 收藏列表 | 1 条
+PASS | 6.3 取消收藏
+PASS | 7.1 数据看板 | total=7 pending=0
+PASS | 7.2 管理端订单分页（含明细） | total=7
+PASS | 7.3 管理端订单详情（昵称=宝贝，UTF-8 字节校验） | 宝贝
+PASS | 7.4 设置歇业
+PASS | 7.5 用户端可见歇业+公告（UTF-8 字节校验） | businessOpen=0 noticeHex=e4bb8ae697a5e6ad87e4b89ae6b58be8af95
+PASS | 7.6 歇业下单返回 1006 | 1006
+PASS | 7.7 恢复营业 | 1
+PASS | 7.8 新增用户 | 测试用户
+PASS | 7.9 重复账号返回 1000 | 1000
+PASS | 7.10 禁用用户
+PASS | 7.11 禁用账号登录返回 1002 | 1002
+PASS | 7.12 重置密码
+PASS | 7.13 重置后新密码可登录
+PASS | 7.14 用户分页搜索 | total=1
+PASS | 7.15 新增分类
+PASS | 7.16 删除空分类
+PASS | 7.17 新增菜品（引用上传图）
+PASS | 7.18 下架菜品
+PASS | 7.19 用户端列表不可见下架菜（详情可读） | status=0
+PASS | 7.20 重新上架
+PASS | 7.21 修改菜品
+PASS | 7.22 删除菜品（逻辑删除）
+PASS | 8.1 修改资料（头像）
+PASS | 8.2 资料生效（头像） | /uploads/202610/d9a7bb913ac944218256c6c6c64b21e7.png
+PASS | 8.3 错误旧密码返回 1000 | 1000
+PASS | 8.4 修改密码
+PASS | 8.5 新密码可登录
+PASS | 8.6 恢复原密码可登录
+PASS | 8.7 登出
+PASS | 9.1 食客端首页 200 | 200 text/html
+PASS | 9.2 管理端路由回退 200 | 200 text/html
+PASS | 9.3 内置占位图可访问 | 200 image/svg+xml
+PASS | 9.4 Knife4j 文档可访问 | 200
+
+==== 自测汇总：69 PASS / 0 FAIL / 共 69 项 ====

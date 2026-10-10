@@ -1,0 +1,63 @@
+﻿==== 1. 认证 ====
+admin login: ok=True code=0 nickname=å¤§å¨ role=ADMIN
+love  login: ok=True code=0 nickname=å®è´ role=USER
+wrong password rejected: 
+no token /me: http=401 body=
+love /me: username=love nickname=å®è´
+
+==== 2. 分类/菜品/上传（管理端） ====
+create category: code=0 id=7
+create dish: code=0 id=16
+upload png: {"code":0,"message":"成功","data":"/uploads/202610/fce3a912823b48dc988b473e42e2400f.png"}
+upload txt rejected: {"code":1005,"message":"仅支持 jpg、jpeg、png、webp 格式的图片"}
+
+==== 3. 浏览/搜索（用户端） ====
+categories count=7（初始 6 + 新增 1 = 7）
+dishes total=16（初始 15 + 新增 1 = 16）
+recommend count=6, contains new dish=
+dish detail: name=ç±å¿çè, tags=æ¿æè/æ¸æ·¡
+search '煎蛋': total=1, first=ç±å¿çè
+
+==== 4. 收藏 ====
+favorite add: code=0
+favorites count=1
+detail favorite flag=True
+after unfavorite count=0
+
+==== 5. 购物车 ====
+cart lines=2; new dish line: qty=2 taste=å¾®è¾£ remark=ä¸è¦é¦è lineLove=10
+after update: qty=3 taste=ä¸­è¾£ remark=ä¸è¦è±
+
+==== 6. 下单与状态流转 ====
+submit order: code=0 no=202610100021263706 total=23 status=PENDING
+repeat with same Idempotency-Key: same order=True
+cart cleared after order: lines=0
+user active orders=1
+admin pending orders=1
+ACCEPTED: code=0 status=ACCEPTED acceptTime=2026-10-10T00:21:27.218887
+illegal ACCEPTED->COMPLETED rejected: 
+COOKING: status=COOKING
+user poll: sees=COOKING label=å¶ä½ä¸­ items=2
+COMPLETED: status=COMPLETED finishTime=2026-10-10T00:21:27.4228039
+user finished orders=1
+
+==== 7. 取消 / 拒绝 ====
+cancel pending: code=0
+cancelled status=CANCELLED
+cancel completed rejected: 
+reject: code=0 status=REJECTED reason=ä»å¤©æ²¡æé£æå¦
+reject without reason rejected: 
+
+==== 8. 再下单/日历/看板/配置/越权 ====
+rebuy: code=0 addedCount=2 skipped=
+cart after rebuy lines=2
+calendar: month=2026-10 days=1 daysWithOrders=
+dashboard: today=2 pending=1 total=4 top5=2 trend=7
+top dishes: 
+trend: 
+public config: open=1 notice=[]
+update config: code=0
+after update: open=0 notice=ä»æåºå»å~
+order while closed rejected: 
+love accesses admin API: http=403 body=
+admin browses user dishes: code=0

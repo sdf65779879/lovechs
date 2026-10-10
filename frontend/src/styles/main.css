@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-cream-100 text-cocoa-700 antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iPhone 安全区适配 */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe-2 {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* 隐藏滚动条但保留滚动（分类 Tab） */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer components {
+  /* 主按钮：奶油橘胶囊 */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-pill bg-primary-400 px-5 py-2.5 font-medium text-white shadow-warm transition active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* 次按钮：奶白描边 */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-pill border border-cream-300 bg-white/80 px-4 py-2 text-cocoa-700 transition active:scale-95;
+  }
+
+  /* 草莓粉按钮 */
+  .btn-berry {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-pill bg-berry-400 px-5 py-2.5 font-medium text-white shadow-float transition active:scale-95;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white shadow-card;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-cocoa-700 outline-none transition placeholder:text-cocoa-300 focus:border-primary-300 focus:ring-2 focus:ring-primary-100;
+  }
+
+  .tag {
+    @apply inline-flex items-center rounded-pill bg-cream-200 px-2.5 py-0.5 text-xs text-cocoa-700;
+  }
+
+  .tag-spicy {
+    @apply bg-primary-100 text-primary-700;
+  }
+
+  .tag-berry {
+    @apply bg-berry-100 text-berry-500;
+  }
+
+  .tag-honey {
+    @apply bg-honey-200 text-honey-500;
+  }
+}
