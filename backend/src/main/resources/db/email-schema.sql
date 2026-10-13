@@ -1,0 +1,15 @@
+-- 增量初始化：兼容已有数据卷，仅创建邮件投递表，不修改业务数据。
+CREATE TABLE IF NOT EXISTS email_delivery (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    event_key VARCHAR(100) NOT NULL UNIQUE,
+    event_type VARCHAR(30) NOT NULL,
+    order_id BIGINT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    attempts INT NOT NULL DEFAULT 0,
+    recipient_count INT NOT NULL DEFAULT 0,
+    error_message VARCHAR(300) NOT NULL DEFAULT '',
+    next_attempt_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lock_token VARCHAR(36) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

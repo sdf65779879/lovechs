@@ -35,6 +35,9 @@ yarn-error.log*
 pnpm-debug.log*
 *.tsbuildinfo
 .eslintcache
+.playwright-cli/
+output/playwright/
+__pycache__/
 
 # ============ IDE ============
 .idea/

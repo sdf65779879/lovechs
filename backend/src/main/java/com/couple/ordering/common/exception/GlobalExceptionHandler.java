@@ -118,7 +118,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public Result<Void> handleMessageNotReadable(HttpMessageNotReadableException e) {
-        log.warn("请求体解析失败：{}", e.getMessage());
+        log.warn("请求体解析失败");
         return Result.error(ResultCode.PARAM_ERROR, "请求数据格式不正确");
     }
 

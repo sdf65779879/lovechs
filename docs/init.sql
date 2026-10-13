@@ -17,6 +17,9 @@ CREATE DATABASE IF NOT EXISTS `couple_ordering`
   DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `couple_ordering`;
 
+-- 重置业务数据时一并清除旧通知；邮件表由后端增量初始化自动创建。
+DROP TABLE IF EXISTS `email_delivery`;
+
 -- ====================================================================
 -- 1. 用户表 sys_user（含管理员）
 -- ====================================================================

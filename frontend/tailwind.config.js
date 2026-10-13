@@ -24,11 +24,13 @@ export default {
         },
         // 草莓粉
         berry: {
+          50: '#FFF4F6',
           100: '#FFE1E7',
           200: '#FFC2CD',
           300: '#FF9DAE',
           400: '#FF6B81',
           500: '#F8556E',
+          700: '#A6203E',
         },
         // 蜂蜜黄
         honey: {

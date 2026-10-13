@@ -603,3 +603,53 @@ Query：`keyword`（账号/昵称模糊）、`pageNum`、`pageSize`。
 
 - `trend`：最近 7 天（含今天），缺日补 0。
 - `topDishes`：最常点 Top 5（按份数）。
+
+## 18. 系统邮件通知（/v1/admin/email，ADMIN）
+
+所有接口仅大厨管理员可用，食客访问返回 403，未登录返回 401。
+
+| 方法 | 路径 | 用途 |
+|---|---|---|
+| GET | `/api/v1/admin/email/settings` | 邮箱及新订单渠道设置，密码仅返回 `passwordConfigured` |
+| PUT | `/api/v1/admin/email/settings` | 保存配置，动态生效 |
+| POST | `/api/v1/admin/email/test` | 将测试邮件加入持久化队列；返回成功表示已排队 |
+| GET | `/api/v1/admin/email/deliveries` | 最近 20 条投递记录，最新在前 |
+
+保存示例：
+
+```json
+{
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 465,
+    "encryption": "TLS",
+    "fromAddress": "system@example.com",
+    "username": "system@example.com",
+    "password": "邮箱服务商生成的授权码",
+    "clearPassword": false
+  },
+  "channel": {
+    "enabled": true,
+    "recipients": "chef@example.com;second@example.com",
+    "event": "NEW_ORDER"
+  }
+}
+```
+
+`password` 不传或为空则保留原值，`clearPassword=true` 清除原值；两者不能同时使用。SMTP 支持 `TLS` / `STARTTLS` / `NONE`，端口范围 1–65535。收件人最多 5 个，格式校验并按大小写不敏感去重；只接受纯邮箱地址，不接受显示名称和控制字符。启用渠道时须有收件人和可用发件配置；Mock 模式仅要求收件人。保存成功返回统一 `{ "code": 0, "message": "成功" }`；参数错误不会包含原始邮箱授权码。
+
+查询设置的 `data` 为 `{smtp:{host,port,encryption,fromAddress,username,passwordConfigured},channel:{enabled,recipients,event},provider:"SMTP"或"MOCK"}`。密码和密文均不会返回。通用 `/v1/admin/configs` 列表排除所有 `email_` 配置，其更新接口也不允许写入此类键；公开配置继续只包含营业开关和公告。
+
+投递记录字段：`id`、`eventType`（`NEW_ORDER` / `TEST`）、`orderId`（测试邮件为空）、`status`、`attempts`、`recipientCount`、`errorMessage`、`createdAt`、`updatedAt`。日期为应用本地时间。
+
+| 状态 | 含义 |
+|---|---|
+| PENDING | 等待发送 |
+| SENDING | 正在发送 |
+| RETRY | 临时故障，等待再次尝试 |
+| SENT | SMTP 服务已接受发送 |
+| MOCK | 模拟成功，无真实投递 |
+| FAILED | 失败或服务中断后结果未知，查看脱敏原因 |
+| SKIPPED | 新订单渠道在发送前被关闭 |
+
+发送和重试每次读取最新配置；尝试上限为 3 次。SMTP 重试具有至少一次投递语义，连接中断可能引起重复送达；发送过程中服务中断的任务超过 5 分钟后终止并提示核对收件箱。发送失败不会修改订单状态或影响大厨接单。

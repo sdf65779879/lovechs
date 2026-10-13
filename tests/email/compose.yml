@@ -1,0 +1,67 @@
+name: couple-email-tests
+
+services:
+  mysql:
+    image: mysql:8.0.41
+    environment:
+      MYSQL_ROOT_PASSWORD: fixture-db-password
+      MYSQL_DATABASE: couple_ordering
+      MYSQL_USER: couple
+      MYSQL_PASSWORD: fixture-db-password
+      TZ: Asia/Shanghai
+    volumes:
+      - test-mysql:/var/lib/mysql
+      - ../../docs/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 45
+
+  mail:
+    image: python:3.12-alpine
+    command: ["python", "/fixture/smtp_fixture.py", "--host", "0.0.0.0"]
+    volumes:
+      - ./smtp_fixture.py:/fixture/smtp_fixture.py:ro
+    ports:
+      - "127.0.0.1:19026:8026"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8026/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    image: couple-ordering-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: couple_ordering
+      MYSQL_USER: couple
+      MYSQL_PASSWORD: fixture-db-password
+      JWT_SECRET: ${TEST_JWT_SECRET:?Use tests/email/run_tests.py to initialize this environment}
+      MAIL_ENCRYPTION_KEY: ${TEST_MAIL_KEY:?Use tests/email/run_tests.py to initialize this environment}
+      EMAIL_PROVIDER: SMTP
+      COUPLE_EMAIL_POLL_INTERVAL_MS: "500"
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mail:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8081/api/v1/health"]
+      interval: 2s
+      timeout: 3s
+      retries: 45
+
+  frontend:
+    image: couple-ordering-frontend
+    ports:
+      - "127.0.0.1:19080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  test-mysql:

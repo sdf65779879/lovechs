@@ -1,14 +1,6 @@
 import { request } from '@/utils/request'
 
-import type {
-  Category,
-  Dashboard,
-  Dish,
-  Order,
-  PageData,
-  SysConfigLine,
-  UserInfo,
-} from './types'
+import type { Category, Dashboard, Dish, Order, PageData, SysConfigLine, UserInfo } from './types'
 
 /* ================= 分类管理 ================= */
 
@@ -36,7 +28,11 @@ export function adminRemoveCategory(id: number) {
 }
 
 export function adminToggleCategoryStatus(id: number, status: number) {
-  return request<void>({ url: `/v1/admin/categories/${id}/status`, method: 'put', data: { status } })
+  return request<void>({
+    url: `/v1/admin/categories/${id}/status`,
+    method: 'put',
+    data: { status },
+  })
 }
 
 /* ================= 菜品管理 ================= */
@@ -107,11 +103,7 @@ export function adminChangeOrderStatus(
 
 /* ================= 用户管理 ================= */
 
-export function adminPageUsers(params: {
-  keyword?: string
-  pageNum: number
-  pageSize: number
-}) {
+export function adminPageUsers(params: { keyword?: string; pageNum: number; pageSize: number }) {
   return request<PageData<UserInfo>>({ url: '/v1/admin/users', method: 'get', params })
 }
 
@@ -152,6 +144,55 @@ export function adminListConfigs() {
 
 export function adminUpdateConfigs(configs: Record<string, string>) {
   return request<void>({ url: '/v1/admin/configs', method: 'put', data: { configs } })
+}
+
+/* ================= 系统邮件通知 ================= */
+
+export interface EmailSettings {
+  provider: 'SMTP' | 'MOCK'
+  smtp: {
+    host: string
+    port: number
+    encryption: 'TLS' | 'STARTTLS' | 'NONE'
+    fromAddress: string
+    username: string
+    passwordConfigured: boolean
+  }
+  channel: { enabled: boolean; recipients: string; event: 'NEW_ORDER' }
+}
+
+export interface EmailDelivery {
+  id: number
+  eventType: 'NEW_ORDER' | 'TEST'
+  orderId?: number
+  status: 'PENDING' | 'SENDING' | 'RETRY' | 'SENT' | 'FAILED' | 'SKIPPED' | 'MOCK'
+  attempts: number
+  recipientCount: number
+  errorMessage: string
+  createdAt: string
+  updatedAt: string
+}
+
+export function adminGetEmailSettings() {
+  return request<EmailSettings>({ url: '/v1/admin/email/settings', method: 'get' })
+}
+
+export function adminSaveEmailSettings(data: {
+  smtp: Omit<EmailSettings['smtp'], 'passwordConfigured'> & {
+    password?: string
+    clearPassword: boolean
+  }
+  channel: EmailSettings['channel']
+}) {
+  return request<void>({ url: '/v1/admin/email/settings', method: 'put', data })
+}
+
+export function adminTestEmail() {
+  return request<void>({ url: '/v1/admin/email/test', method: 'post' })
+}
+
+export function adminGetEmailDeliveries() {
+  return request<EmailDelivery[]>({ url: '/v1/admin/email/deliveries', method: 'get' })
 }
 
 /* ================= 数据看板 ================= */

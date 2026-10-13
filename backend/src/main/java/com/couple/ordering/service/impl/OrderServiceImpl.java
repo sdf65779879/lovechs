@@ -25,6 +25,7 @@ import com.couple.ordering.mapper.OrdersMapper;
 import com.couple.ordering.mapper.SysUserMapper;
 import com.couple.ordering.service.OrderService;
 import com.couple.ordering.service.SysConfigService;
+import com.couple.ordering.notification.OrderEmailNotificationService;
 import com.couple.ordering.vo.OrderCalendarVO;
 import com.couple.ordering.vo.OrderItemVO;
 import com.couple.ordering.vo.OrderVO;
@@ -57,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
     private final SysUserMapper sysUserMapper;
     private final SysConfigService sysConfigService;
     private final IdempotencyStore idempotencyStore;
+    private final OrderEmailNotificationService emailNotifications;
 
     private static final List<String> ACTIVE_STATUSES =
             List.of("PENDING", "ACCEPTED", "COOKING");
@@ -118,6 +120,7 @@ public class OrderServiceImpl implements OrderService {
         // 下单成功后清空购物车
         cartItemMapper.delete(new LambdaQueryWrapper<CartItem>()
                 .eq(CartItem::getUserId, userId));
+        emailNotifications.orderSubmitted(order.getId());
         idempotencyStore.put(idempotencyKey, order.getId());
         return buildOrderVO(order, true, false);
     }

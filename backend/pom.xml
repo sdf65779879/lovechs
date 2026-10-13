@@ -21,6 +21,8 @@
         <java.version>17</java.version>
         <!-- 本机 JDK 23 编译需要较新 Lombok（1.18.36 起完整支持 JDK23）；运行目标为 Java 17 -->
         <lombok.version>1.18.36</lombok.version>
+        <!-- Mockito 的测试字节码工具兼容本机 JDK 23。 -->
+        <byte-buddy.version>1.15.11</byte-buddy.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <hutool.version>5.8.27</hutool.version>
         <jjwt.version>0.12.5</jjwt.version>
@@ -28,6 +30,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -99,6 +105,11 @@
         </dependency>
 
         <!-- 测试 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

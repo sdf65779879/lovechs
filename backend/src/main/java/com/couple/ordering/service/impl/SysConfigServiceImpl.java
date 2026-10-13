@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.couple.ordering.common.constant.Constants;
 import com.couple.ordering.entity.SysConfig;
+import com.couple.ordering.common.exception.BusinessException;
 import com.couple.ordering.mapper.SysConfigMapper;
 import com.couple.ordering.service.SysConfigService;
 import com.couple.ordering.vo.ConfigPublicVO;
@@ -33,12 +34,16 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
     @Override
     public List<SysConfig> listAll() {
         return getBaseMapper().selectList(new LambdaQueryWrapper<SysConfig>()
+                .notLikeRight(SysConfig::getConfigKey, "email_")
                 .orderByAsc(SysConfig::getConfigKey));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateConfigs(Map<String, String> configs) {
+        if (configs.keySet().stream().anyMatch(key -> key != null && key.trim().toLowerCase(java.util.Locale.ROOT).startsWith("email_"))) {
+            throw new BusinessException("邮件配置请通过系统邮箱设置保存");
+        }
         for (Map.Entry<String, String> entry : configs.entrySet()) {
             String key = StrUtil.nullToEmpty(entry.getKey());
             String value = StrUtil.nullToEmpty(entry.getValue());

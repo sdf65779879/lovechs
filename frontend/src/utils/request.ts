@@ -70,7 +70,8 @@ service.interceptors.response.use(
  * 统一请求方法，返回值即后端 data 字段。
  */
 export function request<T>(config: AxiosRequestConfig): Promise<T> {
-  return service.request<unknown, T>(config)
+  // 响应拦截器已将 AxiosResponse 解包为 data；在封装边界声明业务返回类型。
+  return service.request<unknown, unknown>(config) as Promise<T>
 }
 
 export default service

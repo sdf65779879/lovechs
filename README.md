@@ -102,6 +102,45 @@ docker compose logs -f backend         # 查看后端日志（启动无 ERROR �
 curl http://服务器IP/api/v1/health     # 应返回 {"code":0,...}
 ```
 
+## 大厨新订单邮件通知
+
+管理端 **系统设置 → 新订单邮件提醒** 可配置系统发件邮箱和大厨收件邮箱。顾客下单成功后，后台自动发送订单号、顾客昵称、菜品数量、口味、单品备注、整单备注和期望用餐时间。浏览器关闭时也能发送；默认关闭，需配置后启用。
+
+1. 在部署环境的 `.env` 设置 `EMAIL_PROVIDER=SMTP` 和 `MAIL_ENCRYPTION_KEY`。密钥为 32 字节随机数据的 Base64，可运行 `openssl rand -base64 32` 生成；Windows 可用 `[Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))`。
+2. 在管理端填写 SMTP 主机、端口、加密方式、发件邮箱、用户名和授权码。QQ / 163 等邮箱通常需要先开启 SMTP 服务，并使用邮箱授权码。TLS 常用 465，STARTTLS 常用 587，实际以邮箱服务商为准。
+3. 填写大厨收件邮箱，最多 5 个，用逗号或分号分隔；系统校验并自动去重。通知事件固定为“顾客新下单”。
+4. 保存设置后点击 **发送测试邮件**，查看 **最近投递记录** 和收件箱。测试使用已保存配置，可在通知开关关闭时执行；修改未保存时不能测试。
+5. 测试成功后开启新订单邮件通知并保存。修改邮箱或收件地址立即影响后续投递和重试，无需重启。
+
+授权码以 AES-GCM 加密存储在现有 `sys_config` 中，API 不返回密码或密文；留空保留原授权码，勾选“清除已保存的授权码”可删除。`MAIL_ENCRYPTION_KEY` 需要和数据库一起备份并保持稳定；更换密钥后需重新填写授权码。密钥只通过环境变量注入，不能填写在通用系统配置中。
+
+订单和待发邮件使用同一数据库事务：回滚订单不会发送通知，重复提交同一订单不会重复建立任务。后台约每 3 秒检查队列，连接、读写均设置 5 秒超时；临时网络或 SMTP 4xx 故障在约 30 秒、120 秒后重试，最多尝试 3 次。认证、证书、配置错误及 5xx 拒收直接标记失败，订单仍可正常接单。关闭通知后未发出的订单邮件会标记为“已跳过”。
+
+投递记录保留在 `email_delivery` 表，管理页显示最近 20 条及脱敏错误。`SENT` 表示邮件服务接受发送，不保证收件箱投递；请检查垃圾邮件。SMTP 在网络中断时可能已接收邮件，因此重试存在重复送达的可能；发送中服务异常中断超过 5 分钟的任务会标记“结果未知”，请核对收件箱和订单列表。
+
+**已有部署升级**：设置环境变量后执行 `docker compose up -d --build backend frontend`。后端启动自动执行 `CREATE TABLE IF NOT EXISTS email_delivery`，兼容已有数据卷，无需重新执行 `docs/init.sql` 或删除数据卷。业务数据库账号需要创建此表的权限。
+
+**开发与验收**：设置 `EMAIL_PROVIDER=MOCK` 可模拟发送，记录显示“模拟发送成功”；Mock 不读取/解密真实密钥、不连接 SMTP、无需填写发件配置或授权码。真实投递仅通过明确点击测试发送或启用正式通知后发生。
+
+```bash
+# 后端：隔离的 H2 测试数据库与 Mock，不投递真实邮件
+cd backend
+mvn test
+
+# 前端
+cd ../frontend
+npm run type-check
+npm run build
+```
+
+集成及端到端复跑（项目根目录，需要 Docker、Python 3.10+、Node.js/npm）：
+
+```powershell
+python tests/email/run_tests.py all
+```
+
+该入口先运行 12 项真实 MySQL / SMTP 集成测试，再完成双浏览器下单、SMTP 收件、大厨接单与食客状态同步的端到端测试，默认结束后清理隔离环境。详细命令和产物见 [邮件测试说明](tests/email/README.md)。
+
 ## HTTPS 可选方案
 
 > 背景：浏览器 **Notification 通知** 仅在 HTTPS（或 localhost）环境可用。局域网 HTTP 下系统已自动降级为「标题闪烁 + Web Audio 提示音」，功能不受影响；如需浏览器通知或公网安全访问，可按以下任一方案启用 HTTPS。
@@ -171,6 +210,8 @@ Caddy 自动完成证书申请与 HTTPS 跳转，浏览器地址栏显示安全�
 | `MYSQL_ROOT_PASSWORD` | `couple_root` | root 密码（仅初始化/运维用） |
 | `JWT_SECRET` | **必填，无默认** | JWT 签名密钥，长度 ≥ 32 字节，必须修改 |
 | `JWT_EXPIRE` | `604800` | Token 有效期（秒），默认 7 天 |
+| `EMAIL_PROVIDER` | `SMTP` | 邮件发送通道；`MOCK` 仅模拟并记录结果 |
+| `MAIL_ENCRYPTION_KEY` | 空 | 32 字节随机密钥的 Base64，首次保存 SMTP 授权码前设置 |
 
 ## 本地开发（不使用 Docker）
 
@@ -286,3 +327,4 @@ A：确认 `data/uploads` 目录存在且三个服务均已 healthy；图片经 
 - 开发进度与决策记录：[PROGRESS.md](PROGRESS.md)
 - API 接口文档：[docs/api.md](docs/api.md)
 - 阶段四自测报告：[docs/self-test-report.md](docs/self-test-report.md)
+- 新订单邮件验收：[docs/email-self-test-report.md](docs/email-self-test-report.md)

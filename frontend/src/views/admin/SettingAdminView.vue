@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue'
 
 import { adminListConfigs, adminUpdateConfigs } from '@/api/admin'
 import { changePassword } from '@/api/auth'
+import EmailSettingsPanel from '@/components/EmailSettingsPanel.vue'
 import { toast } from '@/utils/toast'
 
 const loading = ref(true)
@@ -136,6 +137,8 @@ onMounted(load)
         {{ savingConfig ? '保存中…' : '保存营业设置' }}
       </button>
     </div>
+
+    <EmailSettingsPanel />
 
     <!-- 修改管理员密码 -->
     <div class="card p-5">
